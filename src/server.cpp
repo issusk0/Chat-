@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <iostream>
+#include "server.h"
 #include <fstream>
 #include <filesystem>
 #include <string>
@@ -9,9 +10,8 @@
 #include <cstdint> //para definir los tipo de dato a la hora de crear el servidor con la funcion createServer
 using namespace std;
 
-class CreateServer{
-    public:
-        std::string createServerPtP(uint32_t IPV4_ADDRESS, uint16_t PORT_ADRRESS, std::string key){
+CreateServer::CreateServer(){};
+std::string CreateServer::createServerPtP(uint32_t IPV4_ADDRESS, uint16_t PORT_ADRRESS, std::string key){
             //AF_INET = ipv4, SOCK_DGRAM = UDP
 
 
@@ -46,7 +46,7 @@ class CreateServer{
 
         };
 
-        bool validateKeys(std::string key){
+        bool CreateServer::validateKeys(std::string key){
             std:: string filepath = "./src/keys/private.txt";
             std:: ifstream file;
             std::string key_file;
@@ -69,4 +69,3 @@ class CreateServer{
             };
 
         };
-};
