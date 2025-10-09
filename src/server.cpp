@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include <iostream>
-#include <format>
 #include <fstream>
 #include <filesystem>
 #include <string>
@@ -39,7 +38,7 @@ class CreateServer{
                 
                 */
                 bind(server_socket, (struct sockaddr*)&serverAddress, sizeof(serverAddress));
-                std:: string formatted_string = format("UDP Server is up on: {}, {}, {}", static_cast<int>(IPV4_ADDRESS),static_cast<int>(PORT_ADRRESS),key)
+                return "SERVER UDP UP!";
             }else{
                 return "Problema al crear el socket o el archivo donde se encuentran las keys tiene error!";
             };
