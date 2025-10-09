@@ -4,7 +4,7 @@ SRC = $(wildcard src/*.cpp)
 
 OBJ = $(SRC:.cpp=.o)
 
-TARGET = chat
+TARGET = bin/main
 
 all: $(TARGET)
 

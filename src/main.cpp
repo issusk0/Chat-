@@ -4,6 +4,7 @@
 #include <vector>
 #include <sys/socket.h>
 #include <cstdint>
+#include <csignal>
 using namespace std;
 
 struct parameters{
@@ -15,15 +16,19 @@ struct in_addr addr;
 int main (int argc, char *argv[]) {
     CreateServer cs;
     parameters pam;
+    cout <<"EMPEZANDO CREACION\n";
     for(int i = 1; i < argc; i++){
-        if(std::string (argv[i]) == "-S"){
-            if(inet_pton(AF_INET, argv[i], &addr) == 1){
+        if(std::string (argv[i]) == "-S" && i + 1 < argc){
+            if(inet_pton(AF_INET, argv[i+ 1], &addr) == 1){
                 pam.ipv4 = addr.s_addr;
+            }else{
+                cout<<"Need an IPV4 Address!\n";
+                return 1;
             };
             
         };
 
-        if(std::string (argv[i]) == "-P"){
+        if(std::string (argv[i]) == "-P" && i + 1 < argc){
             std::string str_port_value = argv[i+1];
             std::uint16_t uint16_value;
             unsigned long templ_ul = std::stoul(str_port_value);
@@ -31,11 +36,17 @@ int main (int argc, char *argv[]) {
             pam.port = uint16_value;
         };
 
-        if(std::string (argv[i]) == "-K"){
-            std::string key = argv[i+1];
-            pam.key = key;
+        if(std::string (argv[i]) == "-K" && i + 1 < argc){
+            pam.key = argv[i +1];
         }
     };
 
+    cout<<"Server UDP running on IP: " << inet_ntoa(addr)
+        <<" Port: "<< pam.port 
+        <<" KEY: "<< pam.key
+        <<"\n";
     cs.createServerPtP(pam.ipv4, pam.port,pam.key);
+    
 };
+
+
