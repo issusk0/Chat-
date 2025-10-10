@@ -39,7 +39,7 @@ std::string CreateServer::createServerPtP(uint32_t IPV4_ADDRESS, uint16_t PORT_A
                 sockaddr_in serverAddress;
                 serverAddress.sin_family = AF_INET;
                 serverAddress.sin_port = htons(PORT_ADRRESS);
-                serverAddress.sin_addr.s_addr = IPV4_ADDRESS;
+                serverAddress.sin_addr.s_addr = htonl(IPV4_ADDRESS);
 
                 /*
                     asignado la estructura del serverAddresss al server_socket, a través del puntero,
@@ -96,6 +96,7 @@ bool CreateServer::validateKeys(std::string key){
 
 
 void CreateServer::runServer(int socketftd){
+    
     char buffer [1024];
     struct sockaddr_in cliaddr;
     socklen_t clilen= sizeof(cliaddr);
