@@ -14,8 +14,6 @@ class Client{
 export struct server{
     std::string ipv4;
     std::string port;
-    std::string key;
-    std::string name;
 };
 
 export struct message{

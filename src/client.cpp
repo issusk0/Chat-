@@ -52,7 +52,7 @@ std::string Client::prepareNsendMessage(message msg){
     struct sockaddr_in sender_structure; //estructura de datos para almacenar los datos de los servidores a enviar
     socklen_t sender_len = sizeof(sender_structure); //longitud de tamaño que ocupa en memoria la estructura de los server
 
-    for(auto& el : servers){
+    for(std::string el : servers){
         if(inet_pton(AF_INET, el.ipv4.c_string(), &addr) == 1){
             sender_structure.sin_addr.s_addr = addr.s_addr;
             sender_structure.sin_family = AF_INET;
