@@ -62,6 +62,7 @@
         "map": "cpp",
         "ranges": "cpp",
         "valarray": "cpp"
-    }
+    },
+    "C_Cpp.errorSquiggles": "disabled"
 
 }

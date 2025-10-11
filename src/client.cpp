@@ -6,20 +6,15 @@
 #include <nlohmann/json.hpp>
 #include <unistd.h>
 #include <fstream>
+#include "aux.h"
 using json = nlohmann::json;
 using namespace std;
 
 
-struct server{
-    std::string ipv4;
-    std::string port;
-    std::string key;
-    std::string name;
-};
 
 Client::Client(){};
 
-void Client::serversToSend(){
+std::vector<server> Client::serversToSend(){
     //abrimos el archivo
     std::ifstream f("server_to_send.json");
     if(!f.is_open()){
@@ -38,44 +33,38 @@ void Client::serversToSend(){
         for(auto& server: el["server"]){
             sdata.ipv4 = server["ip"];
             sdata.port = server["port"];
-            sdata.key = json_file["key"];
-            sdata.name = json_file["username"];   
+                sdata.key = json_file["key"];
+                sdata.name = json_file["username"];   
             ips.push_back(sdata);
         };
     };
-
+    return ips;
 
 
 };
 
 
-std::string Client::sendMessage(std::string ipv4, std::string port,message msg){
-    int socket_client = socket(AF_INET, SOCK_DGRAM, 0);
-    in_addr addr;
-    std::uint16_t unit16_value;
-    struct sockaddr_in socket_cli;
-    socklen_t clilen = sizeof(socket_cli);
+std::string Client::prepareNsendMessage(message msg){
 
+    std::vector<server> servers = serversToSend(); //obtenemos la lista de los servidores y los guardamos en un vector
+    int socket_sender= socket(AF_INET, SOCK_DGRAM, 0); //punto envio datagramas
+    in_addr addr; //lugar para almacenar la ip
+    struct sockaddr_in sender_structure; //estructura de datos para almacenar los datos de los servidores a enviar
+    socklen_t sender_len = sizeof(sender_structure); //longitud de tamaño que ocupa en memoria la estructura de los server
 
-    if(inet_pton(AF_INET, ipv4.c_str(), &addr) > 0){
-        socket_cli.sin_addr.s_addr = addr.s_addr;
+    for(auto& el : servers){
+        if(inet_pton(AF_INET, el.ipv4.c_string(), &addr) == 1){
+            sender_structure.sin_addr.s_addr = addr.s_addr;
+            sender_structure.sin_family = AF_INET;
+            sender_structure.sin_port = htons(transformToU16(el.port));
+            ssize_t numb_bytes = sendto(socket_sender, &msg, sizeof(msg), 0, (struct sockaddr *)&sender_structure,sender_len);
+            if(numb_bytes == -1 ){
+                return "Error al enviar datagrama";
+            };
+        };
     };
 
-
-    unsigned long templ_ul = std::stoul(port);
-    socket_cli.sin_family = AF_INET;
-    unit16_value = static_cast<uint16_t>(templ_ul);
-    socket_cli.sin_port = htons(unit16_value);
-
-
-
-    ssize_t numb_bytes = sendto(socket_client, &msg, sizeof(msg), 0, (struct sockaddr *)&socket_cli,clilen);
-
-    if(numb_bytes == -1 ){
-        return "Error al enviar datagrama";
-    };
-
-
-    return "mensaje enviado!";
+    close(socket_sender);
+    return "mensajes enviados!";
 
 };
