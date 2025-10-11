@@ -16,7 +16,6 @@ struct in_addr addr;
 int main (int argc, char *argv[]) {
     CreateServer cs;
     parameters pam;
-    cout <<"EMPEZANDO CREACION\n";
     for(int i = 1; i < argc; i++){
         if(std::string (argv[i]) == "-S" && i + 1 < argc){
             if(inet_pton(AF_INET, argv[i+ 1], &addr) == 1){
@@ -35,17 +34,8 @@ int main (int argc, char *argv[]) {
             uint16_value = static_cast<uint16_t>(templ_ul);
             pam.port = uint16_value;
         };
-
-        if(std::string (argv[i]) == "-K" && i + 1 < argc){
-            pam.key = argv[i +1];
-        }
     };
-
-    cout<<"Server UDP running on IP: " << inet_ntoa(addr)
-        <<" Port: "<< pam.port 
-        <<" KEY: "<< pam.key
-        <<"\n";
-    cs.createServerPtP(pam.ipv4, pam.port,pam.key);
+    cs.createServerPtP(pam.ipv4, pam.port);
     
 };
 

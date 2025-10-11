@@ -23,13 +23,12 @@ using namespace std;
 
 
 //el ipv_4 tiene que existir dentro de la maquina sino dara error
-CreateServer::CreateServer(){};
 
-std::string CreateServer::createServerPtP(uint32_t IPV4_ADDRESS, uint16_t PORT_ADRRESS, std::string key){
+std::string CreateServer::createServerPtP(uint32_t IPV4_ADDRESS, uint16_t PORT_ADRRESS){
             //AF_INET = ipv4, SOCK_DGRAM = UDP
 
 
-            if(!validateKeys(key)){
+     
 
                 //creacion del socket en udp y protocolo udp
                 int server_socket = socket(AF_INET, SOCK_DGRAM, 0);
@@ -39,7 +38,7 @@ std::string CreateServer::createServerPtP(uint32_t IPV4_ADDRESS, uint16_t PORT_A
                 sockaddr_in serverAddress;
                 serverAddress.sin_family = AF_INET;
                 serverAddress.sin_port = htons(PORT_ADRRESS);
-                serverAddress.sin_addr.s_addr = htonl(IPV4_ADDRESS);
+                serverAddress.sin_addr.s_addr = IPV4_ADDRESS;
 
                 /*
                     asignado la estructura del serverAddresss al server_socket, a través del puntero,
@@ -52,9 +51,9 @@ std::string CreateServer::createServerPtP(uint32_t IPV4_ADDRESS, uint16_t PORT_A
                 
                 */
                 if(bind(server_socket, (struct sockaddr*)&serverAddress, sizeof(serverAddress)) != 0){
-                    return "Error al crear el socket, asegurar de que la dirección IP sea IPV4(inet) y exista dentro de la maquina!\n";
-                }else{
-                    bind(server_socket, (struct sockaddr*)&serverAddress, sizeof(serverAddress));
+                    perror("Error al crear socket!");
+                }else{ 
+                    cout<<"Servidor creado exitosamente";
                     while (true)
                     {   
                         signal(SIGINT, signalHandler);
@@ -63,35 +62,9 @@ std::string CreateServer::createServerPtP(uint32_t IPV4_ADDRESS, uint16_t PORT_A
                     
                     
                 };
-            }else{
-                return "Problema al crear el socket o el archivo donde sexit(se encuentran las keys tiene error!\n";
-            };
             return "";
 };
 
-bool CreateServer::validateKeys(std::string key){
-            std:: string filepath = "./src/keys/private.txt";
-            std:: ifstream file;
-            std::string key_file;
-
-            file.open(filepath);
-            if(file.is_open()){
-           
-                while(getline(file, key_file)){
-                        if(key_file == key){
-                            file.close();
-                            return true;
-                        }
-                };
-                file.close();
-                return false;
-                
-
-            }else{
-                return false;
-            };
-
-};
 
 
 

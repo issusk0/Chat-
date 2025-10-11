@@ -1,4 +1,7 @@
 #include<iostream>
+#include <vector>
+#include <stdio.h>
+#include <string>
 #include <arpa/inet.h>
 #include <netinet/in.h>
 #include <sys/socket.h>
@@ -18,7 +21,8 @@ std::vector<server> Client::serversToSend(){
     //abrimos el archivo
     std::ifstream f("server_to_send.json");
     if(!f.is_open()){
-        cout<<"Error al abrir el archivo, asegurate de no haber cambiado el nombre";
+        cout<<"Error al abrir el archivo, asegurate de no haber cambiado el nombre!";
+        return 1;
     };
 
     //lo parseamos a json
@@ -32,9 +36,7 @@ std::vector<server> Client::serversToSend(){
         server sdata{};
         for(auto& server: el["server"]){
             sdata.ipv4 = server["ip"];
-            sdata.port = server["port"];
-                sdata.key = json_file["key"];
-                sdata.name = json_file["username"];   
+            sdata.port = server["port"]; 
             ips.push_back(sdata);
         };
     };
@@ -52,8 +54,8 @@ std::string Client::prepareNsendMessage(message msg){
     struct sockaddr_in sender_structure; //estructura de datos para almacenar los datos de los servidores a enviar
     socklen_t sender_len = sizeof(sender_structure); //longitud de tamaño que ocupa en memoria la estructura de los server
 
-    for(std::string el : servers){
-        if(inet_pton(AF_INET, el.ipv4.c_string(), &addr) == 1){
+    for(server& el : servers){
+        if(inet_pton(AF_INET, el.ipv4.c_str(), &addr) == 1){
             sender_structure.sin_addr.s_addr = addr.s_addr;
             sender_structure.sin_family = AF_INET;
             sender_structure.sin_port = htons(transformToU16(el.port));

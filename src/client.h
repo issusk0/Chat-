@@ -1,7 +1,17 @@
 #ifndef CLIENT_H
 #define CLIENT_H
+#include <string>
+#include <vector>
+using std::string;
+struct server{
+    string ipv4;
+    string port;
+};
 
-
+struct message{
+    char message[1024];
+    char name[12];
+};
 class Client{
     public:
         Client();
@@ -11,14 +21,5 @@ class Client{
 };
 
 
-export struct server{
-    std::string ipv4;
-    std::string port;
-};
 
-export struct message{
-    char message[1024];
-    char key[12];
-    char name[12];
-};
 #endif

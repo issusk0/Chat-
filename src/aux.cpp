@@ -1,7 +1,7 @@
 #include "aux.h"
 #include <iostream>
 #include "server.h"
-
+using namespace std;
 void signalHandler(int signum){
     exit(signum);
 };
