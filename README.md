@@ -1,5 +1,5 @@
 HOW TO SETUP A SERVER:
-You will need to sepecify the next command: -S (your ipv4) -P (your port). Be sure those data are okay in your machine, otherwise it wont work correctly. And thats it, simple as that.
+You will need to sepecify the next command: -P (your port). Be sure those data are okay in your machine, otherwise it wont work correctly. And thats it, simple as that.
 
 
 HOW TO SEND MESSAGES:
