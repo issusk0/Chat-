@@ -4,6 +4,7 @@
 #include <unistd.h>  
 #include <iostream>
 #include "aux.h"
+#include <nlohmann/json.hpp>
 #include "server.h"
 #include <fstream>
 #include <filesystem>
@@ -75,17 +76,31 @@ void CreateServer::runServer(int socketftd){
     socklen_t clilen= sizeof(cliaddr);
 
 
+
     ssize_t numb_bytes = recvfrom(socketftd, buffer,sizeof(buffer),0, 
                             (struct sockaddr*)&cliaddr, &clilen);
+
+
+    
     
     if(numb_bytes == -1){
         perror("Error al transmitir el mensaje del cliente al sevidor!");
 
     }else{
-        buffer[numb_bytes]= '\0';
-        cout<<buffer<< "\n";
+        buffer[numb_bytes] ='0\n';
+        std::string json_message(buffer);
+        nlohmann::json data = json::parse(json_message);
+        
+        for(std::string el: data.object()){
+            std::string message = data["message"];
+            std::string username = data["username"];
+        };
+
+        cout<<username<<": "<<message;
     };
 
 };
+
+
 
 

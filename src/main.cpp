@@ -5,6 +5,7 @@
 #include <sys/socket.h>
 #include <cstdint>
 #include <csignal>
+#include "client.h"
 using namespace std;
 
 struct parameters{
@@ -14,6 +15,7 @@ struct parameters{
 };
 struct in_addr addr;
 int main (int argc, char *argv[]) {
+    Client cl;
     CreateServer cs;
     parameters pam;
     for(int i = 1; i < argc; i++){
@@ -25,6 +27,7 @@ int main (int argc, char *argv[]) {
                 return 1;
             };
             
+
         };
 
         if(std::string (argv[i]) == "-P" && i + 1 < argc){
@@ -33,6 +36,12 @@ int main (int argc, char *argv[]) {
             unsigned long templ_ul = std::stoul(str_port_value);
             uint16_value = static_cast<uint16_t>(templ_ul);
             pam.port = uint16_value;
+        };
+
+
+        if(std::string (argv[i]) =="-m" && i + < agrc){
+            std::string message = argv[i+1];
+            cl.prepareNsendMessage(message);
         };
     };
     cs.createServerPtP(pam.ipv4, pam.port);

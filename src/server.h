@@ -13,6 +13,5 @@ class CreateServer{
     public:
         std::string createServerPtP(uint32_t IPV4_ADDRESS, uint16_t PORT_ADRRESS);
         void runServer(int socketftd);
-        ssize_t desSerializerMessages();
 };
 #endif
