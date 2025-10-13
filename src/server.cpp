@@ -6,6 +6,7 @@
 #include "aux.h"
 #include <nlohmann/json.hpp>
 #include "server.h"
+#include <cstdlib>
 #include <fstream>
 #include <filesystem>
 #include <string>
@@ -25,7 +26,7 @@ using namespace std;
 
 //el ipv_4 tiene que existir dentro de la maquina sino dara error
 
-std::string CreateServer::createServerPtP(uint32_t IPV4_ADDRESS, uint16_t PORT_ADRRESS){
+std::string CreateServer::createServerPtP(uint16_t PORT_ADRRESS){
             //AF_INET = ipv4, SOCK_DGRAM = UDP
 
 
@@ -39,7 +40,7 @@ std::string CreateServer::createServerPtP(uint32_t IPV4_ADDRESS, uint16_t PORT_A
                 sockaddr_in serverAddress;
                 serverAddress.sin_family = AF_INET;
                 serverAddress.sin_port = htons(PORT_ADRRESS);
-                serverAddress.sin_addr.s_addr = IPV4_ADDRESS;
+                serverAddress.sin_addr.s_addr = INADDR_ANY;
 
                 /*
                     asignado la estructura del serverAddresss al server_socket, a través del puntero,
@@ -53,12 +54,14 @@ std::string CreateServer::createServerPtP(uint32_t IPV4_ADDRESS, uint16_t PORT_A
                 */
                 if(bind(server_socket, (struct sockaddr*)&serverAddress, sizeof(serverAddress)) != 0){
                     perror("Error al crear socket!");
+                    std::exit(EXIT_FAILURE);
                 }else{ 
-                    cout<<"Servidor creado exitosamente";
                     while (true)
                     {   
                         signal(SIGINT, signalHandler);
                         runServer(server_socket);
+                        close(server_socket);
+                        return"exit";
                     };
                     
                     
@@ -71,33 +74,42 @@ std::string CreateServer::createServerPtP(uint32_t IPV4_ADDRESS, uint16_t PORT_A
 
 void CreateServer::runServer(int socketftd){
     
-    char buffer [1024];
+    char buffer [5000];
     struct sockaddr_in cliaddr;
     socklen_t clilen= sizeof(cliaddr);
 
 
 
-    ssize_t numb_bytes = recvfrom(socketftd, buffer,sizeof(buffer),0, 
+    while (true)
+    {
+            ssize_t numb_bytes = recvfrom(socketftd, buffer,sizeof(buffer),0, 
                             (struct sockaddr*)&cliaddr, &clilen);
 
 
-    
-    
-    if(numb_bytes == -1){
-        perror("Error al transmitir el mensaje del cliente al sevidor!");
+                                
+            if(numb_bytes == -1){
+                perror("Error al transmitir el mensaje del cliente al sevidor!");
 
-    }else{
-        buffer[numb_bytes] ='0\n';
-        std::string json_message(buffer);
-        nlohmann::json data = json::parse(json_message);
-        
-        for(std::string el: data.object()){
-            std::string message = data["message"];
-            std::string username = data["username"];
-        };
+            };
+                cout << "Recibidos " << numb_bytes << " bytes: [" << string(buffer, numb_bytes) << "]" << endl;
+                buffer[numb_bytes] ='\0';
+            try{
+                if(sizeof(buffer) < 0){
+                    cerr<<"Error, el buffer está vacio, no hay bytes!"<<endl;
+                };
+                nlohmann::json data = nlohmann::json::parse(buffer);
+                std::string username = data["username"];
+                std::string message = data["message"];
+                cout << username << ": " << message << endl;
+            }catch(const nlohmann::json::exception& e){
+                    cerr << "Error al parsear JSON: " << e.what() << endl << flush;
+            };
 
-        cout<<username<<": "<<message;
-    };
+
+    }
+    
+
+
 
 };
 

@@ -1,51 +1,60 @@
 #include <stdio.h>
 #include <iostream>
-#include "server.h"
 #include <vector>
 #include <sys/socket.h>
 #include <cstdint>
 #include <csignal>
 #include "client.h"
+#include "server.h"
+#include "aux.h"
 using namespace std;
 
-struct parameters{
-    uint32_t ipv4;
-    uint16_t port;
-    std::string key;
+struct parameters {
+    uint16_t port = 8080; // Valor predeterminado
 };
-struct in_addr addr;
-int main (int argc, char *argv[]) {
+
+int main(int argc, char *argv[]) {
     Client cl;
     CreateServer cs;
     parameters pam;
-    for(int i = 1; i < argc; i++){
-        if(std::string (argv[i]) == "-S" && i + 1 < argc){
-            if(inet_pton(AF_INET, argv[i+ 1], &addr) == 1){
-                pam.ipv4 = addr.s_addr;
-            }else{
-                cout<<"Need an IPV4 Address!\n";
+
+    bool run_client = false;
+    string message;
+
+    for (int i = 1; i < argc; i++) {
+        if (string(argv[i]) == "-P" && i + 1 < argc) {
+            try {
+                pam.port = transformToU16(argv[i + 1]);
+                if (pam.port == 0) {
+                    cerr << "Error: Puerto inválido: " << argv[i + 1] << endl;
+                    return 1;
+                }
+                i++;
+            } catch (const std::exception& e) {
+                cerr << "Error al convertir puerto " << argv[i + 1] << ": " << e.what() << endl;
                 return 1;
-            };
-            
+            }
+        } else if (string(argv[i]) == "-m" && i + 1 < argc) {
+            run_client = true;
+            for (int j = i + 1; j < argc; ++j) {
+                message += argv[j];
+                if (j < argc - 1) message += " ";
+            }
+            i = argc;
+        } else {
+            cerr << "Argumento desconocido: " << argv[i] << endl;
+            return 1;
+        }
+    }
 
-        };
-
-        if(std::string (argv[i]) == "-P" && i + 1 < argc){
-            std::string str_port_value = argv[i+1];
-            std::uint16_t uint16_value;
-            unsigned long templ_ul = std::stoul(str_port_value);
-            uint16_value = static_cast<uint16_t>(templ_ul);
-            pam.port = uint16_value;
-        };
-
-
-        if(std::string (argv[i]) =="-m" && i + < agrc){
-            std::string message = argv[i+1];
-            cl.prepareNsendMessage(message);
-        };
-    };
-    cs.createServerPtP(pam.ipv4, pam.port);
-    
-};
-
-
+    if (run_client) {
+        cout << "Ejecutando cliente, enviando mensaje: " << message << endl;
+        string result = cl.prepareNsendMessage(message);
+        cout << result << endl;
+        return 0;
+    } else {
+        cout << "Ejecutando servidor en el puerto " << pam.port << endl;
+        cs.createServerPtP(pam.port);
+        return 0;
+    }
+}

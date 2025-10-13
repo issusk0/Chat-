@@ -11,7 +11,7 @@
 #define SERVER_H
 class CreateServer{
     public:
-        std::string createServerPtP(uint32_t IPV4_ADDRESS, uint16_t PORT_ADRRESS);
+        std::string createServerPtP(uint16_t PORT_ADRRESS);
         void runServer(int socketftd);
 };
 #endif

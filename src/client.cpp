@@ -10,40 +10,60 @@
 #include <unistd.h>
 #include <fstream>
 #include "aux.h"
+#include <cstdlib>
+#include <filesystem>
 using json = nlohmann::json;
 using namespace std;
 
 
 
-Client::Client(){}
+Client::Client(){};
 
 std::vector<server> Client::serversToSend(){
-    //abrimos el archivo
-    std::ifstream f("server_to_send.json");
-    if(!f.is_open()){
-        cout<<"Error al abrir el archivo, asegurate de no haber cambiado el nombre!";
-        return false;
+    std::vector<server> errors;
+    //abrimos el archivo y verificamos si esta abierto
+    std::ifstream file("servers/server_to_send.json");
+    if(!file.is_open()){
+        cerr<< "Error al abrir el archivo JSON"<<endl;
+        return errors;
     };
 
-    //lo parseamos a json
-    json json_file = json::parse(f);
 
-    //preparamos el vector para almacenar los distintos objetos
-    std::vector<server> ips = {};
+    //intentamos parsear el json para utilizarlo
+    try{
+        nlohmann::json json_file = json::parse(file);
+        //creamos la estructura del vector para guardar los servidores como objetos
+        std::vector<server> servers;
 
-    //iniciamos ciclo para cada objeto dentro del archivo json
-    for (auto& el : json_file) {
-        server sdata{};
-        if (el.contains("server")) {
-            for (auto& srv : el["server"]) {
-                sdata.ipv4 = srv.value("ip", "");
-                sdata.port = srv.value("port", "");
-                ips.push_back(sdata);
-            }
-        }
-    }
-    return ips;
+        //iniciamos el ciclo sobre el JSON y validamos su estructura
+        //para poder guardar los valores en la estructura y posteriormente en el vector
+        if(json_file.empty()){
+            return errors;
+        };
+        if(json_file.contains("server") && json_file["server"].is_array()){
+            for(const auto& el: json_file["server"]){
+                //inicalizamos el objeto vacio para rellenarlo con los datos del JSON
+                server sdata;
+                sdata.ipv4 = el.value("ip","");
+                sdata.port = el.value("port","");
+                //verificamos que los datos no esten vacios
+                if(!sdata.ipv4.empty() && !sdata.port.empty()){
+                    cout<<"Servidor encontrado IP: "<<sdata.ipv4<<" puerto: "<<sdata.port<<endl;
+                    servers.push_back(sdata);
+                }else{
+                    cerr<<"Servidores vacios u inexistentes en el JSON"<<endl;
+                };
+            };
+        }else{
+            cerr<<"El archivo JSON no contiene campo de servidores"<<endl;
+        };
 
+    //retornamos el vector con los servidores guardados
+    return servers;
+    }catch(const nlohmann::json::exception& e){
+        cout<<"Error con el JSON: "<<e.what()<<endl;
+        return errors;
+    };
 
 };
 
@@ -52,10 +72,16 @@ std::string Client::prepareNsendMessage(std::string json_string){
 
     std::vector<server> servers = serversToSend(); //obtenemos la lista de los servidores y los guardamos en un vector
     int socket_sender = socket(AF_INET, SOCK_DGRAM, 0); //punto envio datagramas
+
+
+    if(servers.empty()){
+        close(socket_sender);
+        return "No hay servidores para enviar el mensaje!";
+    };
     if (socket_sender == -1) {
         perror("socket");
         return "error: socket";
-    }
+    };
 
     std::string message = serializerMessage(json_string);
 
@@ -68,7 +94,6 @@ std::string Client::prepareNsendMessage(std::string json_string){
             sender_structure.sin_addr.s_addr = addr.s_addr;
             sender_structure.sin_family = AF_INET;
             sender_structure.sin_port = htons(transformToU16(el.port));
-
             ssize_t numb_bytes = sendto(
                 socket_sender,
                 message.data(),
@@ -80,34 +105,57 @@ std::string Client::prepareNsendMessage(std::string json_string){
 
             if (numb_bytes == -1) {
                 perror("Error al enviar el datagrama");
-            }
-        }
-    }
+            };
+        }else{
+            return "Error con la direccion IP, tiene que ser una IPV4";
+        };
+    };
 
     close(socket_sender);
     return "mensajes enviados!";
 
-}
+};
 
 
 std::string Client::serializerMessage(std::string message){
 
+    std::ifstream file("servers/server_to_send.json");
+    if(!file.is_open()){
+        cerr<<"Error al abrir el archivo JSON"<<endl;
+        return "La funcion no ha podido continuar";
+    };
+
+    if(message.empty()){
+        cerr<<"No hay mensaje a enviar";
+        return "";
+    };
+    try{
+        std::filesystem::path filepath = "servers/server_to_send.json";
+        if(std::filesystem::is_empty(filepath)){
+            cerr<<"Error, el archivo está vacio"<<endl;
+            return "";
+       };
+
+       nlohmann::json config = json::parse(file);
+       if(config.empty()){
+            cerr<<"Error, el archivo JSON está vacio"<<endl;
+            return "";
+       };
+       nlohmann::json message_structure;
+
+       if(config.contains("username")){message_structure["username"] = config["username"];};
+       message_structure["message"] = message;
+
+       std::string serialized_message = message_structure.dump();
+        return serialized_message;
 
 
-    nlohmann::json data;
+    }catch(const nlohmann::json::exception &e){
+        cerr<<"Error al operar con el archivo JSON: "<<e.what()<<endl;
+        return "No se ha podido terminar la operacion";
+    };
 
-    std::ifstream f("server_to_send.json");
-    if (!f.is_open()) {
-        cout << "Error al abrir el archivo, asegurate de no haber cambiado el nombre!";
-        return std::string();
-    }
+    return"Funcion no ha cumplido su proposito";
 
-    json config = json::parse(f);
 
-    data["message"] = message;
-    if (config.contains("username")) data["username"] = config["username"];
-
-    std::string json_string = data.dump(); //dump permite transformar json a strings
-
-    return json_string;
-}
+};

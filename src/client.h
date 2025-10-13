@@ -12,7 +12,7 @@ class Client{
         Client();
         string prepareNsendMessage(std::string json_string); //al momento de enviar un mensaje
         std::vector<server> serversToSend(); //funcion para definir el servidor(o grupo de) a enviar el mensaje 
-        std::string serializerMessage();
+        std::string serializerMessage(std::string m);
 };
 
 

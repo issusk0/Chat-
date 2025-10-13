@@ -4,7 +4,7 @@ SRC = $(wildcard src/*.cpp)
 
 OBJ = $(SRC:.cpp=.o)
 
-TARGET = bin/main
+TARGET = src/main
 
 all: $(TARGET)
 
