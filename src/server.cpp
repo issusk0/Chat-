@@ -91,7 +91,6 @@ void CreateServer::runServer(int socketftd){
                 perror("Error al transmitir el mensaje del cliente al sevidor!");
 
             };
-                cout << "Recibidos " << numb_bytes << " bytes: [" << string(buffer, numb_bytes) << "]" << endl;
                 buffer[numb_bytes] ='\0';
             try{
                 if(sizeof(buffer) < 0){
